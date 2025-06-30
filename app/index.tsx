@@ -1,27 +1,27 @@
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 
-
 export default function Index() {
-
-
   const router = useRouter();
-  const handlePress = () => {
+  
+  const handleGetStarted = () => {
+    router.push("./auth");
+  };
 
-  }
   return (
-   
     <View style={styles.container}>
       <Text style={styles.mainText}>EventSnap</Text>
       <Text style={styles.sloganText}>"Snap Up Your Seats in Seconds!"</Text>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.loginBtn}>
+        <TouchableOpacity style={styles.loginBtn} onPress={handleGetStarted}>
           <Text style={styles.buttonText}>Get Started!</Text>
         </TouchableOpacity>
         <View style={styles.loginLinkContainer}>
           <Text style={styles.loginPrompt}>Have an account already? </Text>
-          <Link href="/" style={styles.loginLink}>Login</Link>
+          <TouchableOpacity onPress={handleGetStarted}>
+            <Text style={styles.loginLink}>Login</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
