@@ -1,22 +1,24 @@
 {
   "expo": {
-    "name": "habit",
-    "slug": "habit",
+    "name": "EventSnap",
+    "slug": "eventsnap",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "habit",
+    "scheme": "eventsnap",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.event-snap"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.eventsnap"
     },
     "web": {
       "bundler": "metro",
