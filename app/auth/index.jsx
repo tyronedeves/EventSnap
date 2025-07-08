@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from "react-native";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
+import { useAuth } from "../../context/AuthContext";
 
 // Define colors object with updated modern palette
 const colors = {
@@ -22,34 +23,87 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const router = useRouter();
+  const { signIn, signUp, isLoading } = useAuth();
 
-  const handleAuth = () => {
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleAuth = async () => {
     // Basic validation
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
-    if (!isLogin && password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+    if (!validateEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
       return;
     }
 
-    // For now, just show success message and navigate back to main screen
-    Alert.alert(
-      "Success", 
-      `${isLogin ? "Login" : "Sign up"} successful!`,
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            // Navigate back to main screen
-            router.push("/");
-          }
-        }
-      ]
-    );
+    if (password.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters long");
+      return;
+    }
+
+    if (!isLogin) {
+      if (!name || name.trim().length < 2) {
+        Alert.alert("Error", "Please enter a valid name");
+        return;
+      }
+      
+      if (password !== confirmPassword) {
+        Alert.alert("Error", "Passwords do not match");
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      let result;
+      
+      if (isLogin) {
+        result = await signIn(email, password);
+      } else {
+        result = await signUp(email, password, name.trim());
+      }
+
+      if (result.success) {
+        Alert.alert(
+          "Success", 
+          `${isLogin ? "Login" : "Account created"} successful!`,
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                router.push("/");
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert("Error", result.error || "An error occurred");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message || "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const switchMode = () => {
+    setIsLogin(!isLogin);
+    // Clear form when switching modes
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setName("");
   };
 
   return (
@@ -78,6 +132,20 @@ export default function Auth() {
         </View>
 
         <View style={styles.form}>
+          {!isLogin && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your full name"
+                placeholderTextColor={colors.textSecondary}
+                autoCapitalize="words"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+          )}
+
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
@@ -117,8 +185,18 @@ export default function Auth() {
             </View>
           )}
 
-          <TouchableOpacity style={styles.authBtn} onPress={handleAuth}>
-            <Text style={styles.buttonText}>{isLogin ? "Sign In" : "Create Account"}</Text>
+          <TouchableOpacity 
+            style={[styles.authBtn, (isSubmitting || isLoading) && styles.authBtnDisabled]} 
+            onPress={handleAuth}
+            disabled={isSubmitting || isLoading}
+          >
+            {isSubmitting || isLoading ? (
+              <ActivityIndicator color={colors.textPrimary} />
+            ) : (
+              <Text style={styles.buttonText}>
+                {isLogin ? "Sign In" : "Create Account"}
+              </Text>
+            )}
           </TouchableOpacity>
 
           {isLogin && (
@@ -133,7 +211,7 @@ export default function Auth() {
         <Text style={styles.footerText}>
           {isLogin ? "New to EventSnap?" : "Already have an account?"}
         </Text>
-        <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
+        <TouchableOpacity onPress={switchMode}>
           <Text style={styles.footerLink}>
             {isLogin ? "Create Account" : "Sign In"}
           </Text>
@@ -244,6 +322,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 6,
+  },
+  authBtnDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: colors.textPrimary,
