@@ -47,6 +47,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       
+      // First, ensure no active session exists
+      await appwriteAuth.signOut();
+      
       // Create account
       await appwriteAuth.createAccount(email, password, name);
       
@@ -70,6 +73,9 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       setIsLoading(true);
+      
+      // First, ensure no active session exists
+      await appwriteAuth.signOut();
       
       // Sign in user
       await appwriteAuth.signIn(email, password);
