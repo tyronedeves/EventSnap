@@ -75,18 +75,8 @@ export default function Auth() {
       }
 
       if (result.success) {
-        Alert.alert(
-          "Success", 
-          `${isLogin ? "Login" : "Account created"} successful!`,
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.push("/");
-              }
-            }
-          ]
-        );
+        // Navigate to home screen immediately after successful auth
+        router.replace("/home");
       } else {
         Alert.alert("Error", result.error || "An error occurred");
       }
